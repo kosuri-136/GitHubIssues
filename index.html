@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Github Issues</title>
+  <link rel="stylesheet" href="index.css">
+</head>
+<body>
+  
+    <h1>GITHUB ISSUES</h1>
+  <h3 id="pageHeading">Page number 1</h3>
+ 
+  <ol id="issueList"></ol>
+  <button id="loadPrev">Load Previous</button>
+  <button id="loadNext">Load Next</button>
+
+
+  <script>
+   
+let currentPage = 1;
+let totalPages = 1;
+
+async function fetchIssues(pageNumber) {
+  try {
+    const response = await fetch(`https://api.github.com/repositories/1296269/issues?page=${pageNumber}&per_page=5`);
+    const data = await response.json();
+
+   
+    const linkHeader = response.headers.get('link');
+    if (linkHeader) {
+      const matches = linkHeader.match(/page=(\d+)&per_page=5>; rel="last"/);
+      if (matches && matches.length > 1) {
+        totalPages = parseInt(matches[1]);
+      }
+    }
+
+    const issueList = document.getElementById('issueList');
+    issueList.innerHTML = '';
+
+   
+    for (const issue of data) {
+      const listItem = document.createElement('li');
+      listItem.textContent = issue.title;
+      issueList.appendChild(listItem);
+    }
+  } catch (error) {
+    console.error('Error fetching issues:', error);
+  }
+}
+
+
+const loadPrevButton = document.getElementById('loadPrev');
+const loadNextButton = document.getElementById('loadNext');
+
+loadPrevButton.addEventListener('click', () => {
+  if (currentPage > 1) {
+    currentPage--;
+    document.getElementById('pageHeading').textContent = `Page number ${currentPage}`;
+    fetchIssues(currentPage);
+  }
+});
+
+loadNextButton.addEventListener('click', () => {
+  if (currentPage < totalPages) {
+    currentPage++;
+    document.getElementById('pageHeading').textContent = `Page number ${currentPage}`;
+    fetchIssues(currentPage);
+  }
+});
+
+// Load issues for the initial page
+fetchIssues(currentPage);
+
+
+  </script>
+</body>
+</html>
